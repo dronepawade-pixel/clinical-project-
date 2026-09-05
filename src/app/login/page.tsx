@@ -10,15 +10,16 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { loginAction } from "@/lib/auth/actions";
 import { AuthShell } from "@/components/auth/AuthShell";
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; created?: string }>;
+  searchParams: Promise<{ error?: string; created?: string; demo?: string }>;
 }) {
-  const { error, created } = await searchParams;
+  const { error, created, demo } = await searchParams;
+  const demoEmail = demo === "admin" ? "admin@demo.test" : "";
+  const demoPassword = demo === "admin" ? "demo12345" : "";
 
   return (
     <AuthShell>
@@ -59,6 +60,7 @@ export default async function LoginPage({
                 type="email"
                 autoComplete="email"
                 placeholder="you@example.com"
+                defaultValue={demoEmail}
                 required
               />
             </div>
@@ -69,6 +71,7 @@ export default async function LoginPage({
                 name="password"
                 type="password"
                 autoComplete="current-password"
+                defaultValue={demoPassword}
                 required
               />
             </div>

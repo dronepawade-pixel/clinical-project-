@@ -89,7 +89,7 @@ export default async function PortalLayout({
                     {initials(profile.full_name)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline">{profile.full_name}</span>
+                <span className="hidden text-sm sm:inline">{profile.full_name}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>
@@ -98,17 +98,13 @@ export default async function PortalLayout({
                     {ROLE_LABELS[profile.role]} · {profile.email}
                   </span>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <form action="/api/auth/logout" method="POST">
-                  <button
-                    type="submit"
-                    className="flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none focus:bg-accent focus:text-accent-foreground"
-                  >
-                    Sign out
-                  </button>
-                </form>
               </DropdownMenuContent>
             </DropdownMenu>
+            <form action="/api/auth/logout" method="POST">
+              <Button type="submit" variant="outline" size="sm" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+                Sign out
+              </Button>
+            </form>
           </div>
         </div>
         {/* film-strip navigation band */}

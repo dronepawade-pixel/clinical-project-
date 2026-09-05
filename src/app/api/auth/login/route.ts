@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { setSession } from "@/lib/auth/session";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
 const DEMO_PASSWORD = "demo12345";
+const PENDING_COOKIE = "ct_pending";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,8 +28,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.redirect(redirectUrl, 303);
     }
 
-    await setSession({ email });
-    return NextResponse.redirect(new URL("/dashboard", request.url), 303);
+    // Credentials valid — stash the email in a short-lived pending cookie
+    // and route to the OTP step instead of creating the session yet.
+    const redirect = NextResponse.redirect(new URL("/verify-otp", request.url), 303);
+    redirect.cookies.set(PENDING_COOKIE, Buffer.from(email).toString("base64"), {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 300, // 5 minutes to enter OTP
+    });
+    return redirect;
   } catch {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("error", "other");

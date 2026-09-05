@@ -80,22 +80,25 @@ export function Hero() {
               <Button
                 size="lg"
                 className="bg-white text-black hover:bg-white/85"
-                render={<Link href="/signup" />}
+                render={<Link href="/login" />}
                 nativeButton={false}
               >
-                Request access
+                Sign in to your workspace
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 size="lg"
                 className="border-white/20 bg-white/5 text-white backdrop-blur hover:bg-white/10"
-                render={<Link href="/login" />}
+                render={<Link href="/login?demo=admin" />}
                 nativeButton={false}
               >
-                Sign in to your workspace
+                Try admin demo
               </Button>
             </div>
+            <p className="mt-4 text-xs text-zinc-500">
+              Demo accounts: admin@demo.test · researcher@demo.test · dm@demo.test — password demo12345, OTP 482913.
+            </p>
           </Reveal>
         </motion.div>
 
