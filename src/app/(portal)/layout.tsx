@@ -99,7 +99,7 @@ export default async function PortalLayout({
                   </span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <form action={logoutAction}>
+                <form action="/api/auth/logout" method="POST">
                   <button
                     type="submit"
                     className="flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none focus:bg-accent focus:text-accent-foreground"

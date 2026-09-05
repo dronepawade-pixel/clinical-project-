@@ -27,6 +27,7 @@ export async function middleware(request: NextRequest) {
 }
 
 // `/` is a public landing page; everything else requires auth.
+// Exclude /api routes (auth handlers, exports) from the middleware.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

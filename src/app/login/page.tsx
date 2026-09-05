@@ -29,7 +29,7 @@ export default async function LoginPage({
             Sign in to your trial workspace. Demo data only.
           </CardDescription>
         </CardHeader>
-        <form action={loginAction}>
+        <form action="/api/auth/login" method="POST">
           <CardContent className="space-y-4">
             {created && (
               <p className="text-sm text-emerald-600 dark:text-emerald-400">
