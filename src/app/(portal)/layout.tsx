@@ -15,6 +15,7 @@ import { NAV } from "@/lib/auth/nav";
 import { requireUser, ROLE_LABELS } from "@/lib/auth/rbac";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { FilmStripNav } from "@/components/dashboard/FilmStripNav";
+import { createSupabaseServer } from "@/lib/supabase/server";
 
 function initials(name: string) {
   return name
@@ -33,6 +34,16 @@ export default async function PortalLayout({
   const profile = await requireUser();
   if (!profile.is_active) redirect("/login?error=disabled");
   const nav = NAV[profile.role];
+
+  // Server-side notification count (no client Supabase auth needed).
+  const supabase = await createSupabaseServer();
+  const { data: notifs } = await supabase
+    .from("notifications")
+    .select("read_at")
+    .eq("user_id", profile.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const unread = (notifs ?? []).filter((n) => !n.read_at).length;
 
   return (
     <div className="dark flex min-h-full flex-col bg-[#0a0a0f] text-zinc-100">
@@ -68,7 +79,7 @@ export default async function PortalLayout({
             Clinical Tracking
           </Link>
           <div className="ml-auto flex items-center gap-2">
-            <NotificationBell />
+            <NotificationBell unread={unread} />
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={<Button variant="ghost" className="gap-2" />}

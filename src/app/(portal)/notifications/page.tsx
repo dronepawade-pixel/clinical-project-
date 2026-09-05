@@ -1,6 +1,3 @@
-"use client";
-
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,59 +7,40 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createSupabaseBrowser } from "@/lib/supabase/client";
-import {
-  useNotifications,
-  type AppNotification,
-} from "@/lib/notifications/useNotifications";
+import { requireUser } from "@/lib/auth/rbac";
+import { createSupabaseServer } from "@/lib/supabase/server";
+import { markReadAction, markAllReadAction } from "./actions";
 
 const TYPE_LABELS: Record<string, string> = {
   SAE_REPORT: "Serious adverse event",
   DEFAULT: "Notification",
 };
 
-export default function NotificationsPage() {
-  const { notifications, unread, loading, refresh } = useNotifications();
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  async function markRead(n: AppNotification) {
-    setBusyId(n.id);
-    const supabase = createSupabaseBrowser();
-    await supabase
-      .from("notifications")
-      .update({ read_at: new Date().toISOString() })
-      .eq("id", n.id);
-    setBusyId(null);
-    void refresh();
-  }
-
-  async function markAllRead() {
-    const supabase = createSupabaseBrowser();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase
-      .from("notifications")
-      .update({ read_at: new Date().toISOString() })
-      .eq("user_id", user.id)
-      .is("read_at", null);
-    void refresh();
-  }
+export default async function NotificationsPage() {
+  const profile = await requireUser();
+  const supabase = await createSupabaseServer();
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", profile.id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  const notifications = data ?? [];
+  const unread = notifications.filter((n) => !n.read_at).length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Notifications</h1>
-          <p className="text-muted-foreground">
-            {unread} unread. Realtime updates arrive automatically.
-          </p>
+          <p className="text-muted-foreground">{unread} unread.</p>
         </div>
         {unread > 0 && (
-          <Button variant="outline" size="sm" onClick={markAllRead}>
-            Mark all read
-          </Button>
+          <form action={markAllReadAction}>
+            <Button variant="outline" size="sm" type="submit">
+              Mark all read
+            </Button>
+          </form>
         )}
       </div>
 
@@ -72,9 +50,7 @@ export default function NotificationsPage() {
           <CardDescription>Most recent first.</CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : notifications.length === 0 ? (
+          {notifications.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               No notifications yet. SAE reports and approvals will appear here.
             </p>
@@ -100,21 +76,16 @@ export default function NotificationsPage() {
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {n.type === "SAE_REPORT"
-                      ? `Severity: ${String(n.payload.severity ?? "—")} · Deadline: ${
-                          n.payload.deadline_hours
-                        } hours · AE ${String(n.payload.ae_id).slice(0, 8)}…`
+                      ? `Severity: ${String(n.payload?.severity ?? "—")} · Deadline: ${n.payload?.deadline_hours} hours · AE ${String(n.payload?.ae_id ?? "").slice(0, 8)}…`
                       : JSON.stringify(n.payload)}
                   </p>
                   {!n.read_at && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-1"
-                      disabled={busyId === n.id}
-                      onClick={() => markRead(n)}
-                    >
-                      Mark read
-                    </Button>
+                    <form action={markReadAction}>
+                      <input type="hidden" name="id" value={n.id} />
+                      <Button variant="ghost" size="sm" className="mt-1" type="submit">
+                        Mark read
+                      </Button>
+                    </form>
                   )}
                 </div>
               ))}

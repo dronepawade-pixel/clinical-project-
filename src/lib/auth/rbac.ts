@@ -1,5 +1,6 @@
 import { createSupabaseServer } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth/session";
 
 export const ROLES = [
   "Researcher",
@@ -32,19 +33,23 @@ export interface Profile {
   is_active: boolean;
 }
 
+/**
+ * Look up the profile from Supabase by the session email.
+ * Auth (who you are) comes from the session cookie; profile data comes from Supabase.
+ */
 export async function getCurrentProfile(): Promise<Profile | null> {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const session = await getSession();
+  if (!session) return null;
 
-  const { data } = await supabase
+  const supabase = await createSupabaseServer();
+  const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("email", session.email)
     .single();
-  return data as Profile | null;
+
+  if (error || !data) return null;
+  return data as Profile;
 }
 
 export async function requireUser(): Promise<Profile> {

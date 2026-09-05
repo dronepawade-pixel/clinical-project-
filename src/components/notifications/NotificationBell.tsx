@@ -1,12 +1,7 @@
-"use client";
-
 import { Bell } from "lucide-react";
 import Link from "next/link";
-import { useNotifications } from "@/lib/notifications/useNotifications";
 
-export function NotificationBell() {
-  const { unread } = useNotifications();
-
+export function NotificationBell({ unread = 0 }: { unread?: number }) {
   return (
     <Link
       href="/notifications"

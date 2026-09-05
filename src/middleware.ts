@@ -1,8 +1,29 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import { type NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "@/lib/auth/session";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  const session = getSessionCookie(request);
+  const pathname = request.nextUrl.pathname;
+
+  const isAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup");
+  const isPublic = pathname === "/";
+
+  if (!session && !isAuthRoute && !isPublic) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Already logged in? Send auth routes to dashboard.
+  if (session && isAuthRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
 }
 
 // `/` is a public landing page; everything else requires auth.
