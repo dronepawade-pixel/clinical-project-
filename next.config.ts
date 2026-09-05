@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
         "0.0.0.0:3000",
         "::1:3000",
         "192.168.1.7:3000",
+        "clinicaltrailstracking.netlify.app",
+        ".vercel.app",
       ],
     },
   },
