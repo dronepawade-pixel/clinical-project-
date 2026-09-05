@@ -30,17 +30,8 @@ export async function verifyOtpAction(formData: FormData) {
 
   if (!email || !token) redirect("/verify-otp?error=missing");
 
-  const supabase = await createSupabaseServer();
   const { ok } = await verifyOtp(email, token);
   if (!ok) redirect("/verify-otp?error=invalid");
-
-  await writeAudit("VERIFY_2FA", "auth", `user:${email}`);
-
-  // Re-establish the session LAST so auth cookies propagate through the redirect.
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) {
-    await supabase.auth.setSession({ access_token: session.access_token, refresh_token: session.refresh_token });
-  }
 
   redirect("/dashboard");
 }
