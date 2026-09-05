@@ -7,9 +7,11 @@ export async function middleware(request: NextRequest) {
 
   const isAuthRoute =
     pathname.startsWith("/login") ||
-    pathname.startsWith("/signup");
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/verify-otp");
   const isPublic = pathname === "/";
 
+  // No session yet? Only allow public landing, login, signup, and the OTP step.
   if (!session && !isAuthRoute && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
